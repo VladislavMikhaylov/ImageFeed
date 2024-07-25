@@ -7,16 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A0015F772C4AB9B200990666 /* SingleImageViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0015F762C4AB9B200990666 /* SingleImageViewController.swift */; };
 		A00FE8982C36DE78003DCB25 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00FE8972C36DE78003DCB25 /* AppDelegate.swift */; };
 		A00FE89A2C36DE78003DCB25 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00FE8992C36DE78003DCB25 /* SceneDelegate.swift */; };
 		A00FE89C2C36DE78003DCB25 /* ImagesListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A00FE89B2C36DE78003DCB25 /* ImagesListViewController.swift */; };
 		A00FE89F2C36DE78003DCB25 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = A00FE89E2C36DE78003DCB25 /* Base */; };
 		A00FE8A12C36DE79003DCB25 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A00FE8A02C36DE79003DCB25 /* Assets.xcassets */; };
 		A00FE8A42C36DE79003DCB25 /* Base in Resources */ = {isa = PBXBuildFile; fileRef = A00FE8A32C36DE79003DCB25 /* Base */; };
+		A0ECB48E2C46FA6700229D35 /* ProfileViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0ECB48D2C46FA6700229D35 /* ProfileViewController.swift */; };
 		A0FEB9232C3C3F9E00E3DB51 /* ImagesListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0FEB9222C3C3F9E00E3DB51 /* ImagesListCell.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A0015F762C4AB9B200990666 /* SingleImageViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SingleImageViewController.swift; sourceTree = "<group>"; };
 		A00FE8942C36DE78003DCB25 /* ImageFeed.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ImageFeed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A00FE8972C36DE78003DCB25 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A00FE8992C36DE78003DCB25 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -25,6 +28,7 @@
 		A00FE8A02C36DE79003DCB25 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A00FE8A32C36DE79003DCB25 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		A00FE8A52C36DE79003DCB25 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A0ECB48D2C46FA6700229D35 /* ProfileViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ProfileViewController.swift; sourceTree = "<group>"; };
 		A0FEB9222C3C3F9E00E3DB51 /* ImagesListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagesListCell.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -59,6 +63,8 @@
 			isa = PBXGroup;
 			children = (
 				A0FEB9242C3C3FE800E3DB51 /* ImagesList */,
+				A0ECB48A2C46E20900229D35 /* Profile */,
+				A0015F762C4AB9B200990666 /* SingleImageViewController.swift */,
 				A00FE8972C36DE78003DCB25 /* AppDelegate.swift */,
 				A00FE8992C36DE78003DCB25 /* SceneDelegate.swift */,
 				A00FE89D2C36DE78003DCB25 /* Main.storyboard */,
@@ -66,6 +72,14 @@
 				A00FE8A52C36DE79003DCB25 /* Info.plist */,
 			);
 			path = ImageFeed;
+			sourceTree = "<group>";
+		};
+		A0ECB48A2C46E20900229D35 /* Profile */ = {
+			isa = PBXGroup;
+			children = (
+				A0ECB48D2C46FA6700229D35 /* ProfileViewController.swift */,
+			);
+			path = Profile;
 			sourceTree = "<group>";
 		};
 		A0ECCA4C2C3EBFBB00B8171C /* Resources */ = {
@@ -157,6 +171,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A0ECB48E2C46FA6700229D35 /* ProfileViewController.swift in Sources */,
+				A0015F772C4AB9B200990666 /* SingleImageViewController.swift in Sources */,
 				A00FE89C2C36DE78003DCB25 /* ImagesListViewController.swift in Sources */,
 				A0FEB9232C3C3F9E00E3DB51 /* ImagesListCell.swift in Sources */,
 				A00FE8982C36DE78003DCB25 /* AppDelegate.swift in Sources */,
