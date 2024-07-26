@@ -45,12 +45,12 @@ final class ProfileViewController: UIViewController {
             target: self,
             action: nil)
         view.addSubview(logoutButton)
-        logoutButton.tintColor = UIColor(red: 0.96, green: 0.42, blue: 0.42, alpha: 1.00)
+        logoutButton.tintColor = UIColor(named: "logout_button_color")
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
         logoutButton.widthAnchor.constraint(equalToConstant: 44).isActive = true
         logoutButton.heightAnchor.constraint(equalToConstant: 44).isActive = true
         logoutButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -6).isActive = true
-        guard let photo = self.avatarImageView else {
+        guard let photo = avatarImageView else {
             logoutButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 45).isActive = true
             self.logoutButton = logoutButton
             return
@@ -80,7 +80,7 @@ final class ProfileViewController: UIViewController {
     private func addloginNameLabel() {
         let loginNameLabel = UILabel()
         loginNameLabel.font = UIFont.systemFont(ofSize: 13)
-        loginNameLabel.textColor = UIColor(red: 0.68, green: 0.69, blue: 0.71, alpha: 1.00)
+        loginNameLabel.textColor = UIColor(named: "YP Gray")
         loginNameLabel.text = "@ekaterina_nov"
         view.addSubview(loginNameLabel)
         loginNameLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -99,6 +99,7 @@ final class ProfileViewController: UIViewController {
     private func addDescriptionLabel() {
         let descriptionLabel = UILabel()
         descriptionLabel.font = UIFont.systemFont(ofSize: 13)
+        descriptionLabel.numberOfLines = 0
         descriptionLabel.textColor = .white
         descriptionLabel.text = "Hello, world!"
         view.addSubview(descriptionLabel)
