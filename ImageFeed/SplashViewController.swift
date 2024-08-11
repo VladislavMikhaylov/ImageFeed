@@ -3,17 +3,13 @@ import UIKit
 final class SplashViewController: UIViewController {
     private let ShowAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreen"
     
-    private let oauth2Service = OAuth2Service()
+    private let oauth2Service = OAuth2Service.shared
     private let oauth2TokenStorage = OAuth2TokenStorage()
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        if let token = oauth2TokenStorage.token {
-            switchToTabBarController()
-        } else {
-            performSegue(withIdentifier: ShowAuthenticationScreenSegueIdentifier, sender: nil)
-        }
+        checkAuthenticationStatus()
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -23,6 +19,18 @@ final class SplashViewController: UIViewController {
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         .lightContent
+    }
+    
+    private func checkAuthenticationStatus() {
+        if let token = oauth2TokenStorage.token {
+            loadUserInfoAndProceed()
+        } else {
+            performSegue(withIdentifier: ShowAuthenticationScreenSegueIdentifier, sender: nil)
+        }
+    }
+    
+    private func loadUserInfoAndProceed() {
+        switchToTabBarController()
     }
     
     private func switchToTabBarController() {
@@ -38,7 +46,7 @@ extension SplashViewController {
         if segue.identifier == ShowAuthenticationScreenSegueIdentifier {
             guard
                 let navigationController = segue.destination as? UINavigationController,
-                let viewController = navigationController.viewControllers[0] as? AuthViewController
+                let viewController = navigationController.viewControllers.first as? AuthViewController
             else { fatalError("Failed to prepare for \(ShowAuthenticationScreenSegueIdentifier)") }
             viewController.delegate = self
         } else {
@@ -52,19 +60,6 @@ extension SplashViewController: AuthViewControllerDelegate {
         dismiss(animated: true) { [weak self] in
             guard let self = self else { return }
             self.switchToTabBarController()
-        }
-    }
-    
-    private func fetchOAuthToken(_ code: String) {
-        oauth2Service.fetchOAuthToken(withCode: code) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success:
-                self.switchToTabBarController()
-            case .failure:
-                //TODO: [Sprint_11]
-                break
-            }
         }
     }
 }
