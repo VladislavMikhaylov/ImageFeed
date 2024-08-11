@@ -14,7 +14,6 @@ final class WebViewViewController: UIViewController {
     @IBOutlet var progressView: UIProgressView!
     
     weak var delegate: WebViewViewControllerDelegate?
-    
     enum WebViewConstants {
         static let unsplashAuthorizeURLString = "https://unsplash.com/oauth/authorize"
     }
@@ -56,9 +55,10 @@ final class WebViewViewController: UIViewController {
         context: UnsafeMutableRawPointer?
     ) {
         if keyPath == #keyPath(WKWebView.estimatedProgress) {
-            updateProgress() } else {
-                super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
-            }
+            updateProgress()
+        } else {
+            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
+        }
     }
     
     private func updateProgress() {
@@ -72,7 +72,6 @@ extension WebViewViewController: WKNavigationDelegate {
         if let code = code(from: navigationAction) {
             delegate?.webViewViewController(self, didAuthenticateWithCode: code)
             decisionHandler(.cancel)
-            dismiss(animated: true)
         } else {
             decisionHandler(.allow)
         }
@@ -85,8 +84,7 @@ extension WebViewViewController: WKNavigationDelegate {
             urlComponents.path == "/oauth/authorize/native",
             let items = urlComponents.queryItems,
             let codeItem = items.first(where: { $0.name == "code" })
-        {
-            return codeItem.value
+        { return codeItem.value
         } else {
             return nil
         }

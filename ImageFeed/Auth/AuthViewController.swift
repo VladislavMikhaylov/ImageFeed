@@ -6,14 +6,12 @@ protocol AuthViewControllerDelegate: AnyObject {
 
 final class AuthViewController: UIViewController {
     weak var delegate: AuthViewControllerDelegate?
-    
     private let ShowWebViewSegueIdentifier = "ShowWebView"
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configureBackButton()
     }
-    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == ShowWebViewSegueIdentifier {
             guard
@@ -24,7 +22,6 @@ final class AuthViewController: UIViewController {
             super.prepare(for: segue, sender: sender)
         }
     }
-    
     private func configureBackButton() {
         navigationController?.navigationBar.backIndicatorImage = UIImage(named: "nav_back_button")
         navigationController?.navigationBar.backIndicatorTransitionMaskImage = UIImage(named: "nav_back_button")
@@ -35,7 +32,7 @@ final class AuthViewController: UIViewController {
 
 extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        navigationController?.popToRootViewController(animated: true)
+        navigationController?.popViewController(animated: true)
         OAuth2Service.shared.fetchOAuthToken(withCode: code) { [weak self] result in
             guard let self = self else { return }
             switch result {
@@ -50,7 +47,6 @@ extension AuthViewController: WebViewViewControllerDelegate {
             }
         }
     }
-    
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
         dismiss(animated: true)
     }

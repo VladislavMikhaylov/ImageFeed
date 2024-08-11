@@ -17,9 +17,9 @@ final class SingleImageViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
-        
         guard let image else { return }
         imageView.image = image
         imageView.frame.size = image.size
@@ -65,14 +65,11 @@ extension SingleImageViewController: UIScrollViewDelegate {
     
     func scrollViewDidZoom(_ scrollView: UIScrollView){
         guard let image else {return}
-        
         let visibleRectSize = scrollView.bounds.size
         let imageSize = image.size
         let scale = scrollView.zoomScale
-        
         let left = max((visibleRectSize.width - imageSize.width*scale) / 2, 0)
         let top = max((visibleRectSize.height - imageSize.height*scale) / 2, 0)
-        
         scrollView.contentInset = UIEdgeInsets(top: top, left: left, bottom: top, right: left)
     }
 }

@@ -4,7 +4,7 @@ final class SplashViewController: UIViewController {
     private let ShowAuthenticationScreenSegueIdentifier = "ShowAuthenticationScreen"
     
     private let oauth2Service = OAuth2Service.shared
-    private let oauth2TokenStorage = OAuth2TokenStorage()
+    private let oauth2TokenStorage = OAuth2TokenStorage.shared
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
@@ -22,7 +22,7 @@ final class SplashViewController: UIViewController {
     }
     
     private func checkAuthenticationStatus() {
-        if let token = oauth2TokenStorage.token {
+        if oauth2TokenStorage.token != nil {
             loadUserInfoAndProceed()
         } else {
             performSegue(withIdentifier: ShowAuthenticationScreenSegueIdentifier, sender: nil)
@@ -57,9 +57,6 @@ extension SplashViewController {
 
 extension SplashViewController: AuthViewControllerDelegate {
     func didAuthenticate(_ authViewController: AuthViewController) {
-        dismiss(animated: true) { [weak self] in
-            guard let self = self else { return }
-            self.switchToTabBarController()
-        }
+        dismiss(animated: true)
     }
 }
