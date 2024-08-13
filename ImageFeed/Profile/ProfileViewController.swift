@@ -3,14 +3,14 @@ import UIKit
 final class ProfileViewController: UIViewController {
     
     //MARK: - Properties
-
+    
     private var logoutButton: UIButton?
     private var avatarImageView: UIImageView?
     private var nameLabel: UILabel?
     private var loginNameLabel: UILabel?
     private var descriptionLabel: UILabel?
     @IBAction func logoutButtonTapped(_ sender: Any) {}
-        
+    
     //MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -27,7 +27,7 @@ final class ProfileViewController: UIViewController {
         addloginNameLabel()
         addDescriptionLabel()
     }
-
+    
     private func addAvatarImage() {
         let avatarImageView = UIImageView(image: UIImage(named: "avatar"))
         view.addSubview(avatarImageView)
