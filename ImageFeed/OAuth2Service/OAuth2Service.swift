@@ -1,9 +1,17 @@
 import Foundation
 
+enum AuthServiceError: Error {
+    case invalidRequest
+}
+
 final class OAuth2Service {
     
     static let shared = OAuth2Service()
     private init() {}
+    
+    private let urlSession = URLSession.shared
+    private var task: URLSessionTask?
+    private var lastCode: String?
     
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
         var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token")
@@ -23,30 +31,45 @@ final class OAuth2Service {
     }
     
     func fetchOAuthToken(
-        withCode code: String,
-        completion: @escaping (Result<String, Error>) -> Void
-    ) {
-        let request = makeOAuthTokenRequest(code: code)
-        guard let request else {
-            print("Invalid fetch token request")
-            return
-        }
-        let task = URLSession.shared.data(for: request) { result in
-            switch result {
-            case .success(let data):
-                do {
-                    let decoder = JSONDecoder()
-                    let response = try decoder.decode(OAuthTokenResponseBody.self, from: data)
-                    let token = response.token
-                    completion(.success(token))
-                } catch {
-                    print("OAuth token decode error: \(error.localizedDescription)")
-                    completion(.failure(error))
-                }
-            case .failure(let error):
-                completion(.failure(error))
+        withCode code: String, completion: @escaping (Result<String, Error>) -> Void) {
+            assert(Thread.isMainThread)
+            guard lastCode != code else {
+                completion(.failure(AuthServiceError.invalidRequest))
+                return
             }
+            guard let request = makeOAuthTokenRequest(code: code)
+            else {
+                completion(.failure(AuthServiceError.invalidRequest))
+                return
+            }
+            let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        completion(.failure(error))
+                        self?.task = nil
+                        self?.lastCode = nil
+                        return
+                    }
+                    guard let data = data else {
+                        completion(.failure(AuthServiceError.invalidRequest))
+                        self?.task = nil
+                        self?.lastCode = nil
+                        return
+                    }
+                    do {
+                        let decoder = JSONDecoder()
+                        let response = try decoder.decode(OAuthTokenResponseBody.self, from: data)
+                        let token = response.token
+                        completion(.success(token))
+                    } catch {
+                        print("OAuth token decode error: \(error.localizedDescription)")
+                        completion(.failure(error))
+                    }
+                    self?.task = nil
+                    self?.lastCode = nil
+                }
+            }
+            self.task = task
+            task.resume()
         }
-        task.resume()
-    }
 }

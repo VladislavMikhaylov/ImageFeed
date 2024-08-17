@@ -26,6 +26,21 @@ final class ProfileViewController: UIViewController {
         addNameLabel()
         addloginNameLabel()
         addDescriptionLabel()
+        
+        
+        if  let profile = ProfileService.shared.profile {
+            print("Loading Profile")
+            updateProfileDetails(profile: profile)
+        } else {
+            print("Can't load Profile")
+        }
+    }
+    
+    private func updateProfileDetails(profile: ProfileService.Profile) {
+        print("Func updateProfile is working")
+        loginNameLabel?.text = profile.username
+        nameLabel?.text = profile.name
+        descriptionLabel?.text = profile.bio
     }
     
     private func addAvatarImage() {

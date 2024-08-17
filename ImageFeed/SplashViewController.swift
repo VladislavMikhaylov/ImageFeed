@@ -10,8 +10,16 @@ final class SplashViewController: UIViewController {
         super.viewDidAppear(animated)
         
         checkAuthenticationStatus()
+        
+        if let token = oauth2TokenStorage.token {
+            print("didAppear - ready to load profile")
+            fetchProfile(token: token)
+        } else {
+            performSegue(withIdentifier: ShowAuthenticationScreenSegueIdentifier, sender: nil)
+        }
+        
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         setNeedsStatusBarAppearanceUpdate()
@@ -58,5 +66,24 @@ extension SplashViewController {
 extension SplashViewController: AuthViewControllerDelegate {
     func didAuthenticate(_ authViewController: AuthViewController) {
         dismiss(animated: true)
+    }
+    private func fetchProfile(token: String) {
+        UIBlockingProgressHUD.show()
+        print("loading profile - SplashScreen")
+        ProfileService.shared.fetchProfile(token) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+
+            guard let self = self else { return }
+
+            switch result {
+            case .success:
+                print("splashscreen fetchProfile working \(result)")
+                self.switchToTabBarController()
+
+            case .failure:
+                // TODO: Sprint 11 Покажите ошибку получения профиля
+                break
+            }
+        }
     }
 }
