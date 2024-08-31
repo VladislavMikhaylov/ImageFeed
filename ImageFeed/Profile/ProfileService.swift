@@ -1,4 +1,4 @@
-import UIKit
+import Foundation
 
 enum ProfileServiceError: Error {
     case invalidRequest
@@ -17,19 +17,28 @@ final class ProfileService {
     
     struct ProfileResult: Codable {
         let username: String
-        let first_name: String
-        let last_name: String
+        let firstName: String
+        let lastName: String
         let bio: String
+        
+        enum CodingKeys: String, CodingKey {
+            case username
+            case firstName = "first_name"
+            case lastName = "last_name"
+            case bio
+        }
     }
     
     struct Profile {
         let username: String
         let name: String
+        let loginName: String
         let bio: String
-
+        
         init(profileResult: ProfileResult) {
-            self.username = "@" + profileResult.username
-            self.name = profileResult.first_name + " " + profileResult.last_name
+            self.username = profileResult.username
+            self.name = "\(profileResult.firstName) \(profileResult.lastName)"
+            self.loginName = "@\(profileResult.username)"
             self.bio = profileResult.bio
         }
     }
@@ -67,25 +76,25 @@ final class ProfileService {
         }
         
         let task = URLSession.shared.data(for: request) { result in
-                switch result {
-                case .success(let data):
-                    do {
-                        print("decoding started \(data)")
-                        let decoder = JSONDecoder()
-                        let profileResult = try decoder.decode(ProfileResult.self, from: data)
-                        let result = Profile(profileResult: profileResult)
-                        print("decode JSON success \(result)")
-                        self.profile = result
-                        completion(.success(result))
-                    } catch {
-                        print("Failed to decode ProfileJSON: \(error)")
-                        completion(.failure(error))
-                    }
-                case .failure(let error):
-                    print("Error fetching profile: \(error)")
+            switch result {
+            case .success(let data):
+                do {
+                    print("Decoding started \(data)")
+                    let decoder = JSONDecoder()
+                    let profileResult = try decoder.decode(ProfileResult.self, from: data)
+                    let result = Profile(profileResult: profileResult)
+                    print("Decode JSON success \(result)")
+                    self.profile = result
+                    completion(.success(result))
+                } catch {
+                    print("Failed to decode ProfileJSON: \(error)")
                     completion(.failure(error))
                 }
+            case .failure(let error):
+                print("Error fetching profile: \(error)")
+                completion(.failure(error))
             }
-        task.resume()
         }
+        task.resume()
+    }
 }

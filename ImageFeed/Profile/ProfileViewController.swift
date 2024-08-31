@@ -9,6 +9,7 @@ final class ProfileViewController: UIViewController {
     private var nameLabel: UILabel?
     private var loginNameLabel: UILabel?
     private var descriptionLabel: UILabel?
+    private var profileImageServiceObserver: NSObjectProtocol?
     @IBAction func logoutButtonTapped(_ sender: Any) {}
     
     //MARK: - Lifecycle
@@ -27,13 +28,31 @@ final class ProfileViewController: UIViewController {
         addloginNameLabel()
         addDescriptionLabel()
         
-        
         if  let profile = ProfileService.shared.profile {
             print("Loading Profile")
             updateProfileDetails(profile: profile)
         } else {
             print("Can't load Profile")
         }
+        
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                self.updateAvatar()
+            }
+        updateAvatar()
+    }
+    
+    private func updateAvatar() {
+        guard
+            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let url = URL(string: profileImageURL)
+        else { return }
+        // MARK: TODO Обновить аватар, используя Kingfisher
     }
     
     private func updateProfileDetails(profile: ProfileService.Profile) {
