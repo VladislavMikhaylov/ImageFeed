@@ -51,32 +51,25 @@ final class ProfileImageService {
             completion(.failure(ProfileImageServiceError.invalidRequest))
             return
         }
-        
-        let task = URLSession.shared.data(for: request) { result in
+        let task = URLSession.shared.dataDecodingTask(for: request) { (result: Result<UserResult, Error>) in
             switch result {
-            case .success(let data):
-                do {
-                    print("Decoding started \(data)")
-                    let decoder = JSONDecoder()
-                    let userResult = try decoder.decode(UserResult.self, from: data)
-                    let profileImageURL = userResult.profileImage.small.absoluteString
-                    print("Decode JSON success \(result)")
-                    self.avatarURL = profileImageURL
-                    completion(.success(profileImageURL))
-                    NotificationCenter.default
-                        .post(
-                            name: ProfileImageService.didChangeNotification,
-                            object: self,
-                            userInfo: ["URL": profileImageURL])
-                } catch {
-                    print("Failed to decode ProfileImageJSON: \(error)")
-                    completion(.failure(error))
-                }
+            case .success(let userResult):
+                let profileImageURL = userResult.profileImage.small.absoluteString
+                print("Decoded profile image URL: \(profileImageURL)")
+                self.avatarURL = profileImageURL
+                completion(.success(profileImageURL))
+                print("Posting notification with profile image URL")
+                NotificationCenter.default.post(
+                    name: ProfileImageService.didChangeNotification,
+                    object: self,
+                    userInfo: ["URL": profileImageURL])
+                
             case .failure(let error):
                 print("Error fetching profile image: \(error)")
                 completion(.failure(error))
             }
         }
+        print("Starting URL session task")
         task.resume()
     }
 }

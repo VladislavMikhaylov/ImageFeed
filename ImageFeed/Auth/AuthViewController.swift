@@ -29,6 +29,15 @@ final class AuthViewController: UIViewController {
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem?.tintColor = UIColor(named: "YP Black")
     }
+    
+    private func showAlertError() {
+        let alert = UIAlertController(title: "Что-то пошло не так(",
+                                      message: "Не удалось войти в систему",
+                                      preferredStyle: .alert)
+        let action = UIAlertAction(title: "Ок", style: .default, handler: nil)
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+    }
 }
 
 extension AuthViewController: WebViewViewControllerDelegate {
@@ -47,6 +56,7 @@ extension AuthViewController: WebViewViewControllerDelegate {
                 }
             case .failure(let error):
                 print("Failed to fetch OAuth token: \(error)")
+                self.showAlertError()
             }
         }
     }

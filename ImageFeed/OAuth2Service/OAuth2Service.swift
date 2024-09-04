@@ -2,6 +2,7 @@ import Foundation
 
 enum AuthServiceError: Error {
     case invalidRequest
+    case decodingError
 }
 
 final class OAuth2Service {
@@ -34,35 +35,24 @@ final class OAuth2Service {
         withCode code: String, completion: @escaping (Result<String, Error>) -> Void) {
             assert(Thread.isMainThread)
             guard lastCode != code else {
+                print("[fetchOAuthToken]: InvalidRequest - Attempted to reuse the same code.")
                 completion(.failure(AuthServiceError.invalidRequest))
                 return
             }
-            guard let request = makeOAuthTokenRequest(code: code)
-            else {
+            guard let request = makeOAuthTokenRequest(code: code) else {
+                print("[fetchOAuthToken]: InvalidRequest - Failed to create request.")
                 completion(.failure(AuthServiceError.invalidRequest))
                 return
             }
-            let task = urlSession.dataTask(with: request) { [weak self] data, response, error in
+            let task: URLSessionDataTask = urlSession.objectTask(for: request) {
+                [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
                 DispatchQueue.main.async {
-                    if let error = error {
-                        completion(.failure(error))
-                        self?.task = nil
-                        self?.lastCode = nil
-                        return
-                    }
-                    guard let data = data else {
-                        completion(.failure(AuthServiceError.invalidRequest))
-                        self?.task = nil
-                        self?.lastCode = nil
-                        return
-                    }
-                    do {
-                        let decoder = JSONDecoder()
-                        let response = try decoder.decode(OAuthTokenResponseBody.self, from: data)
+                    switch result {
+                    case .success(let response):
                         let token = response.token
                         completion(.success(token))
-                    } catch {
-                        print("OAuth token decode error: \(error.localizedDescription)")
+                    case .failure(let error):
+                        print("[fetchOAuthToken]: Error - \(error.localizedDescription)")
                         completion(.failure(error))
                     }
                     self?.task = nil
@@ -72,4 +62,38 @@ final class OAuth2Service {
             self.task = task
             task.resume()
         }
+}
+
+extension URLSession {
+    func objectTask<T: Decodable>(for request: URLRequest, completion: @escaping (Result<T, Error>) -> Void) -> URLSessionDataTask {
+        return dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+                return
+            }
+            guard let data = data else {
+                let error = AuthServiceError.invalidRequest
+                print("No data received.")
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+                return
+            }
+            do {
+                let decoder = JSONDecoder()
+                let responseObject = try decoder.decode(T.self, from: data)
+                DispatchQueue.main.async {
+                    completion(.success(responseObject))
+                }
+            } catch {
+                print("Decoding error: \(error.localizedDescription), Data: \(String(data: data, encoding: .utf8) ?? "nil")")
+                DispatchQueue.main.async {
+                    completion(.failure(AuthServiceError.decodingError))
+                }
+            }
+        }
+    }
 }

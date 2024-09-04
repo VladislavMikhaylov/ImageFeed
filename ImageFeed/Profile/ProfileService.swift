@@ -65,36 +65,59 @@ final class ProfileService {
     func fetchProfile(_ token: String, completion: @escaping (Result<Profile, Error>) -> Void) {
         assert(Thread.isMainThread)
         guard lastToken != token else {
+            print("[fetchProfile]: InvalidRequest - Request with the same token is already in progress.")
             completion(.failure(ProfileServiceError.invalidRequest))
             return
         }
-        guard
-            let request = makeProfileURL()
-        else {
+        guard let request = makeProfileURL() else {
+            print("[fetchProfile]: InvalidRequest - Failed to create request.")
             completion(.failure(ProfileServiceError.invalidRequest))
             return
         }
-        
-        let task = URLSession.shared.data(for: request) { result in
+        let task: URLSessionDataTask = URLSession.shared.objectTask(for: request) { (result: Result<ProfileResult, Error>) in
             switch result {
-            case .success(let data):
-                do {
-                    print("Decoding started \(data)")
-                    let decoder = JSONDecoder()
-                    let profileResult = try decoder.decode(ProfileResult.self, from: data)
-                    let result = Profile(profileResult: profileResult)
-                    print("Decode JSON success \(result)")
-                    self.profile = result
-                    completion(.success(result))
-                } catch {
-                    print("Failed to decode ProfileJSON: \(error)")
-                    completion(.failure(error))
-                }
+            case .success(let profileResult):
+                let profile = Profile(profileResult: profileResult)
+                print("[fetchProfile]: Success - Decoded Profile: \(profile)")
+                self.profile = profile
+                completion(.success(profile))
             case .failure(let error):
-                print("Error fetching profile: \(error)")
+                print("[fetchProfile]: Error - \(error.localizedDescription)")
                 completion(.failure(error))
             }
         }
         task.resume()
+    }
+}
+
+extension URLSession {
+    func URLSessionObjectTask<T: Decodable>(for request: URLRequest, completion: @escaping (Result<T, Error>) -> Void) -> URLSessionDataTask {
+        return dataTask(with: request) { data, response, error in
+            if let error = error {
+                print("Network error: \(error.localizedDescription)")
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+                return
+            }
+            guard let data = data else {
+                print("Error: No data received.")
+                DispatchQueue.main.async {
+                    completion(.failure(ProfileServiceError.invalidRequest))
+                }
+                return
+            }
+            do {
+                let decodedObject = try JSONDecoder().decode(T.self, from: data)
+                DispatchQueue.main.async {
+                    completion(.success(decodedObject))
+                }
+            } catch {
+                print("Decoding error: \(error.localizedDescription), Data: \(String(data: data, encoding: .utf8) ?? "nil")")
+                DispatchQueue.main.async {
+                    completion(.failure(error))
+                }
+            }
+        }
     }
 }
