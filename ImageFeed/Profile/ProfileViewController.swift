@@ -1,4 +1,5 @@
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
@@ -35,6 +36,17 @@ final class ProfileViewController: UIViewController {
             print("Can't load Profile")
         }
         
+        if let savedAvatarURL = UserDefaults.standard.string(forKey: "avatarURL"),
+           let url = URL(string: savedAvatarURL) {
+            let processor = RoundCornerImageProcessor(cornerRadius: 20)
+            avatarImageView?.kf.indicatorType = .activity
+            avatarImageView?.kf.setImage(
+                with: url,
+                placeholder: UIImage(named: "Placeholder"),
+                options: [.processor(processor)]
+            )
+        }
+        
         profileImageServiceObserver = NotificationCenter.default
             .addObserver(
                 forName: ProfileImageService.didChangeNotification,
@@ -52,7 +64,16 @@ final class ProfileViewController: UIViewController {
             let profileImageURL = ProfileImageService.shared.avatarURL,
             let url = URL(string: profileImageURL)
         else { return }
-        // MARK: TODO Обновить аватар, используя Kingfisher
+        print("ProfileImageURL: \(url)")
+        UserDefaults.standard.set(profileImageURL, forKey: "avatarURL")
+        let processor = ResizingImageProcessor(referenceSize: CGSize(width: 70, height: 70))
+        |> RoundCornerImageProcessor(cornerRadius: 35)
+        avatarImageView?.kf.indicatorType = .activity
+        avatarImageView?.kf.setImage(
+            with: url,
+            placeholder: UIImage(named: "Placeholder"),
+            options: [.processor(processor)]
+        )
     }
     
     private func updateProfileDetails(profile: ProfileService.Profile) {
