@@ -4,7 +4,7 @@ import SwiftKeychainWrapper
 final class OAuth2TokenStorage {
     
     static let shared = OAuth2TokenStorage()
-    init() {}
+    private init() {}
     
     private let storage = KeychainWrapper.standard
     private enum StorageKeys: String {

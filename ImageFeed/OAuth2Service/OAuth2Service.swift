@@ -3,6 +3,7 @@ import Foundation
 enum AuthServiceError: Error {
     case invalidRequest
     case decodingError
+    case requestInProgress
 }
 
 final class OAuth2Service {
@@ -11,7 +12,7 @@ final class OAuth2Service {
     private init() {}
     
     private let urlSession = URLSession.shared
-    private var task: URLSessionTask?
+    private var tasks: [String: URLSessionTask] = [:]
     private var lastCode: String?
     
     private func makeOAuthTokenRequest(code: String) -> URLRequest? {
@@ -33,10 +34,9 @@ final class OAuth2Service {
     
     func fetchOAuthToken(
         withCode code: String, completion: @escaping (Result<String, Error>) -> Void) {
-            assert(Thread.isMainThread)
-            guard lastCode != code else {
-                print("[fetchOAuthToken]: InvalidRequest - Attempted to reuse the same code.")
-                completion(.failure(AuthServiceError.invalidRequest))
+            if let _ = tasks[code] {
+                print("[fetchOAuthToken]: RequestInProgress - A request for this code is already in progress.")
+                completion(.failure(AuthServiceError.requestInProgress))
                 return
             }
             guard let request = makeOAuthTokenRequest(code: code) else {
@@ -47,6 +47,9 @@ final class OAuth2Service {
             let task: URLSessionDataTask = urlSession.objectTask(for: request) {
                 [weak self] (result: Result<OAuthTokenResponseBody, Error>) in
                 DispatchQueue.main.async {
+                    defer {
+                        self?.tasks[code] = nil
+                    }
                     switch result {
                     case .success(let response):
                         let token = response.token
@@ -55,11 +58,9 @@ final class OAuth2Service {
                         print("[fetchOAuthToken]: Error - \(error.localizedDescription)")
                         completion(.failure(error))
                     }
-                    self?.task = nil
-                    self?.lastCode = nil
                 }
             }
-            self.task = task
+            tasks[code] = task
             task.resume()
         }
 }

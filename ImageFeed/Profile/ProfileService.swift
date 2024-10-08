@@ -7,7 +7,7 @@ enum ProfileServiceError: Error {
 final class ProfileService {
     static let shared = ProfileService()
     private init() {}
-    private let storage = OAuth2TokenStorage()
+    private let storage = OAuth2TokenStorage.shared
     
     private let urlSession = URLSession.shared
     private var task: URLSessionTask?
@@ -18,8 +18,8 @@ final class ProfileService {
     struct ProfileResult: Codable {
         let username: String
         let firstName: String
-        let lastName: String
-        let bio: String
+        let lastName: String?
+        let bio: String?
         
         enum CodingKeys: String, CodingKey {
             case username
@@ -37,9 +37,9 @@ final class ProfileService {
         
         init(profileResult: ProfileResult) {
             self.username = profileResult.username
-            self.name = "\(profileResult.firstName) \(profileResult.lastName)"
+            self.name = "\(profileResult.firstName) \(profileResult.lastName ?? "")"
             self.loginName = "@\(profileResult.username)"
-            self.bio = profileResult.bio
+            self.bio = profileResult.bio ?? "No bio available"
         }
     }
     

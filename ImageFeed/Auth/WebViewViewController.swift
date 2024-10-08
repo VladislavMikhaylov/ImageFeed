@@ -29,8 +29,7 @@ final class WebViewViewController: UIViewController {
             \.estimatedProgress,
              options: [.new]
         ) { [weak self] _, change in
-            guard let self = self else { return }
-            self.updateProgress()
+            self?.updateProgress()
         }
     }
     
