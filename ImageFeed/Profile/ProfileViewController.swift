@@ -1,4 +1,5 @@
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
@@ -9,7 +10,10 @@ final class ProfileViewController: UIViewController {
     private var nameLabel: UILabel?
     private var loginNameLabel: UILabel?
     private var descriptionLabel: UILabel?
-    @IBAction func logoutButtonTapped(_ sender: Any) {}
+    private var profileImageServiceObserver: NSObjectProtocol?
+    @IBAction func logoutButtonTapped(_ sender: Any) {
+        // TODO: logoutAction
+    }
     
     //MARK: - Lifecycle
     
@@ -26,6 +30,77 @@ final class ProfileViewController: UIViewController {
         addNameLabel()
         addloginNameLabel()
         addDescriptionLabel()
+        
+        if let profile = ProfileService.shared.profile {
+            print("Loading Profile")
+            updateProfileDetails(profile: profile)
+        } else {
+            print("Can't load Profile")
+        }
+        
+        if let savedAvatarURL = UserDefaults.standard.string(forKey: "avatarURL"),
+           let url = URL(string: savedAvatarURL) {
+            let processor = RoundCornerImageProcessor(cornerRadius: 20)
+            avatarImageView?.kf.indicatorType = .activity
+            avatarImageView?.kf.setImage(
+                with: url,
+                placeholder: UIImage(named: "Placeholder"),
+                options: [.processor(processor)]
+            )
+        }
+        
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                self?.updateAvatar()
+            }
+        fetchProfileAndAvatar()
+    }
+    private func fetchProfileAndAvatar() {
+        guard let profile = ProfileService.shared.profile else { return }
+        updateProfileDetails(profile: profile)
+        
+        if let username = ProfileService.shared.profile?.username {
+            ProfileImageService.shared.fetchProfileImageURL(username: username) { [weak self] result in
+                switch result {
+                case .success(let url):
+                    UserDefaults.standard.set(url, forKey: "avatarURL")
+                    self?.updateAvatar(with: URL(string: url)!)
+                case .failure(let error):
+                    print("Error fetching profile image: \(error)")
+                }
+            }
+        }
+    }
+    
+    private func updateProfileDetails(profile: ProfileService.Profile) {
+        print("Func updateProfile is working")
+        loginNameLabel?.text = profile.username
+        nameLabel?.text = profile.name
+        descriptionLabel?.text = profile.bio
+    }
+    
+    private func updateAvatar() {
+        guard let profileImageURL = ProfileImageService.shared.avatarURL,
+              let url = URL(string: profileImageURL) else {
+            print("No valid avatar URL found")
+            return
+        }
+        updateAvatar(with: url)
+    }
+    
+    private func updateAvatar(with url: URL) {
+        let processor = ResizingImageProcessor(referenceSize: CGSize(width: 70, height: 70))
+        |> RoundCornerImageProcessor(cornerRadius: 35)
+        avatarImageView?.kf.indicatorType = .activity
+        avatarImageView?.kf.setImage(
+            with: url,
+            placeholder: UIImage(named: "Placeholder"),
+            options: [.processor(processor)]
+        )
     }
     
     private func addAvatarImage() {
@@ -36,6 +111,8 @@ final class ProfileViewController: UIViewController {
         avatarImageView.heightAnchor.constraint(equalToConstant: 70).isActive = true
         avatarImageView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 16).isActive = true
         avatarImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32).isActive = true
+        avatarImageView.layer.cornerRadius = 35
+        avatarImageView.clipsToBounds = true
         self.avatarImageView = avatarImageView
     }
     
