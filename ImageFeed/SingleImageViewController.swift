@@ -1,11 +1,18 @@
 import UIKit
+import Kingfisher
 
 final class SingleImageViewController: UIViewController {
     
-    var image: UIImage? {
+    var imageURL: String? {
         didSet {
-            guard isViewLoaded,
-                  let image else { return }
+            guard isViewLoaded, let urlString = imageURL, let url = URL(string: urlString) else { return }
+            imageView.kf.setImage(with: url, placeholder: UIImage(named: "stub"))
+        }
+    }
+    
+    private var image: UIImage? {
+        didSet {
+            guard isViewLoaded, let image else { return }
             imageView.image = image
             imageView.frame.size = image.size
             rescaleAndCenterImageInScrollView(image: image)
@@ -20,10 +27,24 @@ final class SingleImageViewController: UIViewController {
         
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
-        guard let image else { return }
-        imageView.image = image
-        imageView.frame.size = image.size
-        rescaleAndCenterImageInScrollView(image: image)
+        
+        imageView.contentMode = .scaleAspectFit
+        imageView.image = UIImage(named: "stub")
+        
+        if let urlString = imageURL, let url = URL(string: urlString) {
+            imageView.kf.setImage(
+                with: url,
+                placeholder: UIImage(named: "stub"),
+                options: [.transition(.fade(0.3))],
+                completionHandler: { [weak self] result in
+                    guard let self = self, case .success(let value) = result else { return }
+                    self.rescaleAndCenterImageInScrollView(image: value.image)
+                }
+            )
+        } else if let image {
+            imageView.image = image
+            rescaleAndCenterImageInScrollView(image: image)
+        }
     }
     
     @IBAction func didTapShareButton(_ sender: UIButton) {
